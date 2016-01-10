@@ -103,6 +103,7 @@ namespace Thing3
 
             //NEEDSWORK: This will eventually be a triangle or some other "indicator"
             imgSelector = this.Content.Load<Texture2D>("SoftOrb");
+
         }
 
         /// <summary>
@@ -183,7 +184,10 @@ namespace Thing3
                             game = new EncodingGame(difficulty);
                         else
                             game = new DecodingGame(difficulty);
-                        
+
+                        // NEEDSWORK: This is awful..... it might honestly be better to load the images
+                        // from Game1. They don't vary across game types anyway
+                        game.LoadContent(this.Content);
                         menuItemCounter = 0;
                         gameState = GameState.Playing;
                     }
@@ -270,9 +274,10 @@ namespace Thing3
                     drawDifficultySelector(spriteBatch);
                     break;
                 case GameState.Instructions:
-                    game.Draw(spriteBatch, offset);
+                    
                     break;
                 case GameState.Playing:
+                    game.Draw(spriteBatch, offset);
                     break;
                 case GameState.GameOver:
                     break;

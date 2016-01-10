@@ -31,3 +31,4 @@ C:\Users\Elena\Documents\Visual Studio 2013\Projects\Thing3\Thing3\bin\Windows\D
 C:\Users\Elena\Documents\Visual Studio 2013\Projects\Thing3\Thing3\bin\Windows\Debug\Content\tmpRoles.png
 C:\Users\Elena\Documents\Visual Studio 2013\Projects\Thing3\Thing3\bin\Windows\Debug\Content\tmpDifficulties.png
 C:\Users\Elena\Documents\Visual Studio 2013\Projects\Thing3\Thing3\bin\Windows\Debug\Content\tmpLogo.png
+C:\Users\Elena\Documents\Visual Studio 2013\Projects\Thing3\Thing3\bin\Windows\Debug\Content\forDebuggingPurposes.png

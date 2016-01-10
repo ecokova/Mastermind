@@ -20,6 +20,8 @@ namespace Thing3
         private int[] playerGuess;
         private int[] playerGuessColorCounts;
 
+        private Texture2D imgFOR_DEBUGGING;
+
         public DecodingGame(Difficulty _difficulty)
         {
             initializeKeysMap();
@@ -48,24 +50,20 @@ namespace Thing3
             playerGuessColorCounts = new int[codeColors.Length];
             resetPlayerGuess();
 
+            
         }
 
         override public void LoadContent(ContentManager content)
         {
             loadImages(content);
+            imgFOR_DEBUGGING = content.Load<Texture2D>("forDebuggingPurposes");
         }
 
         override public void Update(KeyboardState keyboard, KeyboardState oldKeyboard)
         {
             if (currPlayer == PlayerTurn.Computer)
             {
-                foreach (int color in playerGuess)
-                {
-                    playerGuessColorCounts[color]++;
-                }
-                numTurns++;
-                numExact = 0;
-                numAlmost = 0;
+                
                 //give feedback on player's entry
                 for (int i = 0; i < CODE_LENGTH; i++)
                 {
@@ -74,7 +72,13 @@ namespace Thing3
                         numExact++;
                     // Same color, but in other spots
                     else
+                    {
+                        Console.WriteLine("Color: " + code[i] + ", player has " + playerGuessColorCounts[code[i]] + ", computer has " +
+                            codeColorCounts[code[i]]);
+                        // NEEDSWORK: Double counts colors. Need to have this next line only happen once for each color
+                        // Fix when less tired
                         numAlmost += Math.Min(playerGuessColorCounts[code[i]], codeColorCounts[code[i]]);
+                    }
                 }
 
                 if (numExact == CODE_LENGTH)
@@ -90,6 +94,13 @@ namespace Thing3
                 // All slots filled
                 if (playerGuess.Count<int>(count => count == -1) == 0)
                 {
+                    foreach (int color in playerGuess)
+                    {
+                        playerGuessColorCounts[color]++;
+                    }
+                    numTurns++;
+                    numExact = 0;
+                    numAlmost = 0;
                     currPlayer = PlayerTurn.Computer;
                 }
                 else
@@ -154,7 +165,34 @@ namespace Thing3
         }
         override public void Draw(SpriteBatch spriteBatch, Vector2 offset)
         {
+            spriteBatch.Draw(imgFOR_DEBUGGING, offset, Color.Gray);
+            for (int i = 0; i < code.Length; i++ )
+            {
+                //...........................................width of label      padding   offset         offset due to prev lights
+                spriteBatch.Draw(imgCodeLight, new Rectangle(imgFOR_DEBUGGING.Width + 5 + (int)offset.X + codeImgSize * i,
+                    (int)offset.Y, codeImgSize, codeImgSize), codeColors[code[i]]);
+            }
 
+            for (int i = 0; i < playerGuess.Length; i++)
+            {
+                if (playerGuess[i] == -1)
+                    continue;
+                spriteBatch.Draw(imgCodeLight, new Rectangle((int)offset.X + codeImgSize * i,
+                    imgFOR_DEBUGGING.Height + 10 + (int)offset.Y, codeImgSize, codeImgSize), codeColors[playerGuess[i]]);
+            }
+            int feedBackOffset = 0;
+            for (int i = 0; i < numExact; i++)
+            {
+                spriteBatch.Draw(imgFeedbackPeg, new Rectangle((int)offset.X + CODE_LENGTH * codeImgSize + feedBackOffset,
+                    imgFOR_DEBUGGING.Height + 10 + (int)offset.Y, feedbackImgSize, feedbackImgSize), COLOR_EXACT);
+                feedBackOffset += feedbackImgSize;
+            }
+            for (int i = 0; i < numAlmost; i++)
+            {
+                spriteBatch.Draw(imgFeedbackPeg, new Rectangle((int)offset.X + CODE_LENGTH * codeImgSize + feedBackOffset,
+                    imgFOR_DEBUGGING.Height + 10 + (int)offset.Y, feedbackImgSize, feedbackImgSize), COLOR_ALMOST);
+                feedBackOffset += feedbackImgSize;
+            }
         }
     }
 }
