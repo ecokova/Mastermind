@@ -14,11 +14,24 @@ namespace Thing3
     /// <summary>
     /// This is the main type for your game
     /// </summary>
+    public enum Difficulty
+    {
+        Easy,
+        Medium,
+        Hard
+    }
+    enum Role
+    {
+        Encoder,
+        Decoder
+    }
     public class Game1 : Game
     {
 
         const int WINDOW_WIDTH = 600;
         const int WINDOW_HEIGHT = 500;
+        const int NUM_DIFFICULTIES = 3;
+        const int NUM_ROLES = 2;
 
         enum GameState
         {
@@ -28,18 +41,7 @@ namespace Thing3
             Playing,
             GameOver
         }
-
-        enum Difficulty
-        {
-            Easy,
-            Medium,
-            Hard
-        }
-        enum Role
-        {
-            Decoder,
-            Encoder
-        }
+        
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
         KeyboardState keyboard;
@@ -76,7 +78,7 @@ namespace Thing3
             gameState = GameState.Intro;
             animationTimer = 0;
             menuItemCounter = 0;
-            role = Role.Decoder;
+            role = Role.Encoder;
             difficulty = Difficulty.Easy;
 
             graphics.PreferredBackBufferWidth = WINDOW_WIDTH;
@@ -137,48 +139,51 @@ namespace Thing3
                     }
                     break;
                 case GameState.Config:
+
+                    #region Unsuccessful code change notes
+                    /*-------------------------------------------------------------------
+                     * Works, but flips 60 times a second. Would need to check that those
+                     * conditions AREN'T true for oldKeyboard, but that would make the 
+                     * if statement almost impossible to read. Scrapping this idea and
+                     * just moving the if statements to a function.
+                     *-------------------------------------------------------------------
                     // NEEDSWORK: CLEAN THIS UP
-                    if (wasKeyPressed(Keys.Up))
+                    // NOTE: LeftShift seems to be in every list of pressed keys if a
+                    // key was held rather than pressed. It comes second in the list, 
+                    // so if a key was pressed, it will be the first one.
+                    Keys[] pressed = keyboard.GetPressedKeys();
+                    if (pressed.Length > 0 && pressed[0] != Keys.LeftShift)
                     {
-                        menuItemCounter = (menuItemCounter - 1) % 2;
+                        // NOTE: Relative key values:
+                        //  Up:    1
+                        //  Right: 0
+                        //  Down: -1
+                        //  Left: -2
+                        
+                        int upDownOffset = (int)(Keys.Right);
+                        menuItemCounter = (menuItemCounter + ((int)pressed[0] - upDownOffset)) % 2;
+                        
                     }
-                    if (wasKeyPressed(Keys.Down))
+                    */
+                    #endregion
+                    if (wasKeyPressed(Keys.Up) || wasKeyPressed(Keys.Down))
                     {
-                        menuItemCounter = (menuItemCounter + 1) % 2;
+                        switchMenuItem(keyboard.GetPressedKeys()[0], 2);
                     }
-                    if (wasKeyPressed(Keys.Right))
+                    if (wasKeyPressed(Keys.Right) || wasKeyPressed(Keys.Left))
                     {
-                        if (menuItemCounter == 0) // Choosing role
-                        {
-                            role = (Role)((int)role == 1 ? 0 : 1);
-                        }
+                        if (menuItemCounter == 0)   
+                            switchChosenRole(keyboard.GetPressedKeys()[0]);
                         else
-                        {                               // NEEDSWORK: DONT HARDCODE THIS
-                            difficulty = (Difficulty)((int)difficulty == 2 ? 0 : (int)difficulty + 1);
-                        }
-                    }
-                    if (wasKeyPressed(Keys.Left))
-                    {
-                        if (menuItemCounter == 0) // Choosing role
-                        {
-                            role = (Role)((int)role == 0 ? 1 : 0);
-                        }
-                        else
-                        {
-                            // Decrements difficulty and wraps if needed
-                            difficulty = (Difficulty)((int)difficulty == 0 ? 3 : (int)difficulty - 1);
-                        }
+                            switchChosenDifficulty(keyboard.GetPressedKeys()[0]);
                     }
                     if (wasKeyPressed(Keys.Enter))
                     {
                         if (role == Role.Encoder)
-                        {
-                            game = new EncodingGame();
-                        }
+                            game = new EncodingGame(difficulty);
                         else
-                        {
-                            game = new DecodingGame();
-                        }
+                            game = new DecodingGame(difficulty);
+                        
                         menuItemCounter = 0;
                         gameState = GameState.Playing;
                     }
@@ -186,13 +191,54 @@ namespace Thing3
                 case GameState.Instructions:
                     break;
                 case GameState.Playing:
-                    game.Update();
+                    game.Update(keyboard, oldKeyboard);
                     break;
                 case GameState.GameOver:
                     break;
             }
 
             base.Update(gameTime);
+        }
+        // Changes selected menu item based on key pressed.
+        private void switchMenuItem(Keys key, int numMenuItems)
+        {
+            switch (key)
+            {
+                case Keys.Up:
+                    menuItemCounter = (menuItemCounter - 1) % numMenuItems;
+                    break;
+                case Keys.Down:
+                    menuItemCounter = (menuItemCounter + 1) % numMenuItems;
+                    break;
+            }
+            
+        }
+        // Changes selected role based on key pressed.
+        private void switchChosenRole(Keys key) 
+        {
+            switch(key) 
+            {
+                case Keys.Right:
+                    role = (Role)((int)role == NUM_ROLES - 1 ? 0 : (int)role + 1);
+                    break;
+                case Keys.Left:
+                    role = (Role)((int)role == 0 ? NUM_ROLES - 1 : (int) role - 1);
+                    break;
+            }
+        }
+
+        // Changes selected difficulty based on key pressed.
+        private void switchChosenDifficulty(Keys key) 
+        {
+            switch(key) 
+            {
+                case Keys.Right:
+                    difficulty = (Difficulty)((int)difficulty == NUM_DIFFICULTIES - 1 ? 0 : (int)difficulty + 1);
+                    break;
+                case Keys.Left:
+                    difficulty = (Difficulty)((int)difficulty == 0 ? NUM_DIFFICULTIES - 1 : (int)difficulty - 1);
+                    break;
+            }
         }
 
         // Determines whether a given key was pressed, where a press occurs
