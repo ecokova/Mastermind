@@ -105,26 +105,18 @@ namespace Thing3
                 }
                 else
                 {
-                    // NEEDSWORK: omfg why is there no indexof
-                    int nextIndex = 0;
-                    for (int i = 0; i < playerGuess.Length; i++)
-                    {
-                        if (playerGuess[i] == -1)
-                        {
-                            nextIndex = i;
-                            break;
-                        }
-                    }
+                    // First unfilled one
+                    int nextIndex = Array.IndexOf(playerGuess, -1);
+
                     // NEEDSWORK: This will eventually be done with a mouse / clicking. Even so,
                     // the logic should be changed so that a color isn't accepted / added to the
                     // code until the user approves it. Leaving it this way for now.
                     
-                    //NEEDSWORK: Find a way to iterate through all the keys in the dictionary
-                    for (int i = 0; i < codeKeys.Length; i++)
+                    foreach (Keys key in codeKeysMap.Keys)
                     {
-                        if (wasKeyPressed(codeKeys[i], keyboard, oldKeyboard))
+                        if (wasKeyPressed(key, keyboard, oldKeyboard))
                         {
-                            playerGuess[nextIndex] = codeKeysMap[codeKeys[i]];
+                            playerGuess[nextIndex] = codeKeysMap[key];
                             break;
                         }
                     }
