@@ -18,12 +18,12 @@ namespace Thing3
         }
 
         protected Color[] codeColors = {
-                                           new Color(230, 30, 30),  // Red
-                                           new Color(30, 230, 30),  // Green
-                                           new Color(30, 30, 230),  // Blue
-                                           new Color(230, 230, 30), // Yellow
-                                           new Color(30, 230, 230), // Teal
-                                           new Color(230, 30, 230)  // Purple
+                                           new Color(160, 60, 60),  // Red
+                                           new Color(60, 160, 30),  // Green
+                                           new Color(60, 60, 160),  // Blue
+                                           new Color(190, 180, 80), // Yellow
+                                           new Color(60, 160, 160), // Teal
+                                           new Color(130, 60, 160)  // Purple
                                        };
         protected Keys[] codeKeys = {
                                         Keys.R, Keys.G, Keys.B, Keys.Y, Keys.T, Keys.P

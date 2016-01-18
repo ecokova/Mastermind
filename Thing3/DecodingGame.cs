@@ -74,16 +74,15 @@ namespace Thing3
                 Guess currentGuess = new Guess();
                 currentGuess.code = new int[playerGuess.Length];
                 playerGuess.CopyTo(currentGuess.code, 0);
-                currentGuess.numExact = numExact;
-                currentGuess.numAlmost = numAlmost;
-                guesses.Add(currentGuess);
+                
+
                 // Calculate number of exact
                 for (int i = 0; i < CODE_LENGTH; i++)
                 {
                     // Same color in same spot
                     if (code[i] == playerGuess[i])
                         numExact++;
-                    
+
                 }
                 // Calculate number of almost
                 numAlmost -= numExact; // Corrects for exact values double counted as "almosts"
@@ -91,6 +90,10 @@ namespace Thing3
                 {
                     numAlmost += Math.Min(playerGuessColorCounts[i], codeColorCounts[i]);
                 }
+
+                currentGuess.numExact = numExact;
+                currentGuess.numAlmost = numAlmost;
+                guesses.Add(currentGuess);
 
                 if (numExact == CODE_LENGTH)
                     isCodeCracked = true;
@@ -177,19 +180,32 @@ namespace Thing3
                     (int)offset.Y, codeImgSize, codeImgSize), codeColors[code[i]]);
             }
 
-            drawUserGuesses(spriteBatch, offset);
+            drawPrevGuesses(spriteBatch, offset);
+            drawCurrGuess(spriteBatch, offset);
             // NEEDSWORK: All imgFOR_DEBUGGING references will eventually need to be changed to reflect whatever
             // image I actually put in.
         }
 
-        private void drawUserGuesses(SpriteBatch spriteBatch, Vector2 offset)
+        private void drawPrevGuesses(SpriteBatch spriteBatch, Vector2 offset)
         {
             
             foreach (Guess g in guesses) 
             {
                 drawSingleUserGuess(g, spriteBatch, offset);
+                drawSingleUserFeedback(g, spriteBatch, offset);
                 offset.Y += codeImgSize + 3;
             }
+        }
+
+        private void drawCurrGuess(SpriteBatch spriteBatch, Vector2 offset)
+        {
+            Guess g = new Guess();
+            g.code = new int[playerGuess.Length];
+            g.code = playerGuess;
+            g.numAlmost = numAlmost;
+            g.numExact = numExact;
+
+            drawSingleUserGuess(g, spriteBatch, offset + new Vector2(150, 0));
         }
 
         private void drawSingleUserGuess(Guess guess, SpriteBatch spriteBatch, Vector2 offset)
@@ -199,10 +215,12 @@ namespace Thing3
             {
                 if (guess.code[i] == -1)
                     continue;
-                Console.Write(guess.code[i]);
                 drawCodeLight(spriteBatch, offset, i, codeColors[guess.code[i]]);
             }
-            
+        }
+
+        private void drawSingleUserFeedback(Guess guess, SpriteBatch spriteBatch, Vector2 offset)
+        {
             int feedBackOffset = 0;
 
             // Exact feedback markers
@@ -218,7 +236,6 @@ namespace Thing3
                 feedBackOffset += feedbackImgSize;
             }
         }
-
         // Draws a single code light
         private void drawCodeLight(SpriteBatch spriteBatch, Vector2 offset, int lightPos, Color color)
         {
