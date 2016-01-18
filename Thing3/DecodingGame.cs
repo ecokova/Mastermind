@@ -12,6 +12,12 @@ namespace Thing3
     // User decodes a code designed by the computer.
     class DecodingGame : MastermindGame
     {
+        private struct Guess
+        {
+            public int[] code;
+            public int numExact;
+            public int numAlmost;
+        }
         private int numExact;
         private int numAlmost;
         // The code is represented as a sequence of indices of colors in the codeColors array
@@ -19,6 +25,8 @@ namespace Thing3
         private int[] codeColorCounts;
         private int[] playerGuess;
         private int[] playerGuessColorCounts;
+
+        private List<Guess> guesses;
 
         private Texture2D imgFOR_DEBUGGING;
 
@@ -50,7 +58,7 @@ namespace Thing3
             playerGuessColorCounts = new int[codeColors.Length];
             resetPlayerGuess();
 
-            
+            guesses = new List<Guess>();            
         }
 
         override public void LoadContent(ContentManager content)
@@ -63,26 +71,30 @@ namespace Thing3
         {
             if (currPlayer == PlayerTurn.Computer)
             {
-                
-                //give feedback on player's entry
+                Guess currentGuess = new Guess();
+                currentGuess.code = new int[playerGuess.Length];
+                playerGuess.CopyTo(currentGuess.code, 0);
+                currentGuess.numExact = numExact;
+                currentGuess.numAlmost = numAlmost;
+                guesses.Add(currentGuess);
+                // Calculate number of exact
                 for (int i = 0; i < CODE_LENGTH; i++)
                 {
                     // Same color in same spot
                     if (code[i] == playerGuess[i])
                         numExact++;
-                    // Same color, but in other spots
-                    else
-                    {
-                        Console.WriteLine("Color: " + code[i] + ", player has " + playerGuessColorCounts[code[i]] + ", computer has " +
-                            codeColorCounts[code[i]]);
-                        // NEEDSWORK: Double counts colors. Need to have this next line only happen once for each color
-                        // Fix when less tired
-                        numAlmost += Math.Min(playerGuessColorCounts[code[i]], codeColorCounts[code[i]]);
-                    }
+                    
+                }
+                // Calculate number of almost
+                numAlmost -= numExact; // Corrects for exact values double counted as "almosts"
+                for (int i = 0; i < playerGuessColorCounts.Length; i++)
+                {
+                    numAlmost += Math.Min(playerGuessColorCounts[i], codeColorCounts[i]);
                 }
 
                 if (numExact == CODE_LENGTH)
                     isCodeCracked = true;
+
 
                 printAnalysis(); // For debugging
 
@@ -165,26 +177,59 @@ namespace Thing3
                     (int)offset.Y, codeImgSize, codeImgSize), codeColors[code[i]]);
             }
 
-            for (int i = 0; i < playerGuess.Length; i++)
+            drawUserGuesses(spriteBatch, offset);
+            // NEEDSWORK: All imgFOR_DEBUGGING references will eventually need to be changed to reflect whatever
+            // image I actually put in.
+        }
+
+        private void drawUserGuesses(SpriteBatch spriteBatch, Vector2 offset)
+        {
+            
+            foreach (Guess g in guesses) 
             {
-                if (playerGuess[i] == -1)
+                drawSingleUserGuess(g, spriteBatch, offset);
+                offset.Y += codeImgSize + 3;
+            }
+        }
+
+        private void drawSingleUserGuess(Guess guess, SpriteBatch spriteBatch, Vector2 offset)
+        {
+            // User's guess
+            for (int i = 0; i < guess.code.Length; i++)
+            {
+                if (guess.code[i] == -1)
                     continue;
-                spriteBatch.Draw(imgCodeLight, new Rectangle((int)offset.X + codeImgSize * i,
-                    imgFOR_DEBUGGING.Height + 10 + (int)offset.Y, codeImgSize, codeImgSize), codeColors[playerGuess[i]]);
+                Console.Write(guess.code[i]);
+                drawCodeLight(spriteBatch, offset, i, codeColors[guess.code[i]]);
             }
+            
             int feedBackOffset = 0;
-            for (int i = 0; i < numExact; i++)
+
+            // Exact feedback markers
+            for (int i = 0; i < guess.numExact; i++)
             {
-                spriteBatch.Draw(imgFeedbackPeg, new Rectangle((int)offset.X + CODE_LENGTH * codeImgSize + feedBackOffset,
-                    imgFOR_DEBUGGING.Height + 10 + (int)offset.Y, feedbackImgSize, feedbackImgSize), COLOR_EXACT);
+                drawFeedbackPeg(spriteBatch, offset, feedBackOffset, COLOR_EXACT);
                 feedBackOffset += feedbackImgSize;
             }
-            for (int i = 0; i < numAlmost; i++)
+            // Almost feedback markers
+            for (int i = 0; i < guess.numAlmost; i++)
             {
-                spriteBatch.Draw(imgFeedbackPeg, new Rectangle((int)offset.X + CODE_LENGTH * codeImgSize + feedBackOffset,
-                    imgFOR_DEBUGGING.Height + 10 + (int)offset.Y, feedbackImgSize, feedbackImgSize), COLOR_ALMOST);
+                drawFeedbackPeg(spriteBatch, offset, feedBackOffset, COLOR_ALMOST);
                 feedBackOffset += feedbackImgSize;
             }
+        }
+
+        // Draws a single code light
+        private void drawCodeLight(SpriteBatch spriteBatch, Vector2 offset, int lightPos, Color color)
+        {
+            spriteBatch.Draw(imgCodeLight, new Rectangle((int)offset.X + codeImgSize * lightPos,
+                    imgFOR_DEBUGGING.Height + 10 + (int)offset.Y, codeImgSize, codeImgSize), color);
+        }
+        // Draws a single feedback peg
+        private void drawFeedbackPeg(SpriteBatch spriteBatch, Vector2 offset, int feedBackOffset, Color color)
+        {
+            spriteBatch.Draw(imgFeedbackPeg, new Rectangle((int)offset.X + CODE_LENGTH * codeImgSize + feedBackOffset,
+                   imgFOR_DEBUGGING.Height + 10 + (int)offset.Y, feedbackImgSize, feedbackImgSize), color);
         }
     }
 }
